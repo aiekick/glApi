@@ -56,11 +56,15 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 
 #define CheckGLErrors glApi::checkGLErrors(__FILE__, __FUNCTION__, __LINE__)
 
+// the order is important
+// so dont reorder these includes
+
 #include "texture.hpp"
 #include "fbo.hpp"
 #include "mesh.hpp"
 #include "quadMesh.hpp"
 #include "procMesh.hpp"
+#include "uniforms.hpp"
 #include "shader.hpp"
 #include "program.hpp"
 #include "quadVfx.hpp"

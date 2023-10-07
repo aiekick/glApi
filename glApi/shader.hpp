@@ -43,6 +43,7 @@ private:
     GLuint m_ShaderId = 0U;
     std::string m_ShaderName;
     GLenum m_ShaderType = 0;
+    Uniforms m_Uniforms;
 
 public:
     static ShaderPtr createFromFile(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vFile) {
@@ -86,6 +87,7 @@ public:
         m_ShaderId = glCreateShader((GLenum)vShaderType);
         CheckGLErrors;
         if (m_ShaderId > 0U) {
+            const auto code = m_Uniforms.parse_and_filter_code(vCode);
             const GLchar* sources = vCode.c_str();
             glShaderSource(m_ShaderId, 1U, &sources, nullptr);
             CheckGLErrors;
