@@ -65,7 +65,7 @@ public:
             for (double v = -_PI_, t = 0.0; v < _PI_; v += v_step, t += t_step) {
                 double x = xy * cos(v);
                 double y = xy = sin(v);
-                vertices.push_back(ProcDatas(x, y, z, s, t));
+                vertices.push_back(ProcDatas((float)x, (float)y, (float)z, (float)s, (float)t));
             }
         }
 
