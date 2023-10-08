@@ -61,7 +61,8 @@ private:
     std::string m_ProgramName;
     std::map<uintptr_t, ShaderWeak> m_Shaders;  // a same shader object can be added two times
     UniformPerShaderTypeContainer m_Uniforms;
-    UniformPreUploadFunctor m_UniformPreUploadFunctor = nullptr;  // lmanda to execute just before the uniform upload
+    UniformPreUploadFunctor m_UniformPreUploadFunctor = nullptr;  // lanbda to execute just before the uniform upload
+    UniformsManager m_UniformsManager;
 
 public:
     static ProgramPtr create(const std::string& vProgramName) {

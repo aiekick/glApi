@@ -25,7 +25,6 @@ SOFTWARE.
 #pragma once
 
 #include "glApi.hpp"
-#include <imgui.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -43,7 +42,7 @@ private:
     GLuint m_ShaderId = 0U;
     std::string m_ShaderName;
     GLenum m_ShaderType = 0;
-    Uniforms m_Uniforms;
+    UniformStrings m_UniformStrings;
 
 public:
     static ShaderPtr createFromFile(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vFile) {
@@ -87,8 +86,8 @@ public:
         m_ShaderId = glCreateShader((GLenum)vShaderType);
         CheckGLErrors;
         if (m_ShaderId > 0U) {
-            const auto code = m_Uniforms.parse_and_filter_code(vCode);
-            const GLchar* sources = vCode.c_str();
+            const auto code = m_UniformStrings.parse_and_filter_code(vCode);
+            const GLchar* sources = code.c_str();
             glShaderSource(m_ShaderId, 1U, &sources, nullptr);
             CheckGLErrors;
             glCompileShader(m_ShaderId);
@@ -145,7 +144,7 @@ private:
                 char* infoLog = new char[infoLen];
                 glGetShaderInfoLog(m_ShaderId, infoLen, nullptr, infoLog);
                 CheckGLErrors;
-                printf("#### SHADER %s ####", vShaderName.c_str());
+                printf("#### SHADER %s ####\n", vShaderName.c_str());
                 printf("%s : %s", vLogTypes.c_str(), infoLog);
                 delete[] infoLog;
             }

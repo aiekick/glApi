@@ -40,20 +40,99 @@ namespace glApi {
 
 class IUniform {
 public:
+    typedef std::function<void(IUniform*)> IUniformDrawWidgetFunctor;
+
+protected:
+    std::string m_name;
+    GLint m_loc = -1;
+    GLuint m_channels = 1U;
+    bool m_used = false;
+    bool m_showed = false;
+    IUniformDrawWidgetFunctor m_draw_widget_functor = nullptr;
+
+public:
+    void set_draw_widget_functor(const IUniformDrawWidgetFunctor& vUniformDrawWidgetFunctor) {
+        m_draw_widget_functor = vUniformDrawWidgetFunctor;
+    }
+    virtual bool draw_widget() {
+        if (m_draw_widget_functor != nullptr) {
+            m_draw_widget_functor(this);
+        }
+    };
+    const char* get_general_help() {
+        return u8R"(
+general syntax is : 
+- uniform type(widget:params) name; // simple or multiline comment
+)";
+    }
+    virtual bool upload() = 0;
+    virtual const char* get_help() = 0;
 };
 
 class UniformTime : public IUniform {
 private:
-    bool play = false;
-    float time = 0.0f;
+    bool m_play = false;
+    float m_time = 0.0f;
 
 public:
+    bool upload() override {
+        return false;
+    }
+    const char* get_help() override {
+        return u8R"(
+buffer uniform syantax :(default is optional)
+- uniform float(time:default) name;
+)";
+    }
+};
+
+class UniformBuffer : public IUniform {
+private:
+public:
+    bool upload() override {
+        return false;
+    }
+    const char* get_help() override {
+        return u8R"(
+buffer uniform syantax :
+- resolution :
+  - vec2 resolution => uniform vec2(buffer) name;
+  - vec3 resolution => uniform vec2(buffer) name; (like shadertoy resolution)
+- sampler2D back buffer : (target is optional. n is the fbo attachment id frrm 0 to 7)
+  - uniform sampler2D(buffer) name; => for target == 0
+  - uniform sampler2D(buffer:target=n) name; => for target == n
+)";
+    }
+};
+
+class UniformSlider : public IUniform {
+private:
+public:
+    bool upload() override {
+        return false;
+    }
+    const char* get_help() override {
+        return u8R"(
+slider uniform syntax : (default and step are otionals)
+- uniform float(inf:sup:default:step) name;
+- uniform vec2(inf:sup:default:step) name;
+- uniform vec3(inf:sup:default:step) name;
+- uniform vec4(inf:sup:default:step) name;
+- uniform int(inf:sup:default:step) name;
+- uniform ivec2(inf:sup:default:step) name;
+- uniform ivec3(inf:sup:default:step) name;
+- uniform ivec4(inf:sup:default:step) name;
+- uniform uint(inf:sup:default:step) name;
+- uniform uvec2(inf:sup:default:step) name;
+- uniform uvec3(inf:sup:default:step) name;
+- uniform uvec4(inf:sup:default:step) name;
+)";
+    }
 };
 
 class UniformParsingDatas {
 public:
     std::string uniform_line;
-    size_t uniform_line_size = 0U;
     std::string uniform_type;
     std::string widget_type;
     std::string uniform_name;
@@ -72,7 +151,7 @@ public:
         if (uniform_comment_original.empty()) {
             return "uniform " + uniform_type + " " + uniform_name + ";";
         } else {
-            return "uniform " + uniform_type + " " + uniform_name + "; " + uniform_comment_original;
+            return "uniform " + uniform_type + " " + uniform_name + "; // " + uniform_comment_original;
         }
     }
     const bool& isValid() {
@@ -109,7 +188,6 @@ private:
         }
 
         uniform_line = vUniformString;
-        uniform_line_size = vUniformString.size();
 
         // we wnat to gety all theses
         // uniform type(widget:params) name; comment
@@ -257,6 +335,8 @@ private:
         m_replace_string(uniform_name, "\r", "");
         m_replace_string(uniform_param_line, "\r", "");
 
+        /// parse params
+
         std::string word;
         bool first_word = true;
         for (auto c : uniform_param_line) {
@@ -267,6 +347,10 @@ private:
                     if (m_is_content_string(word)) {
                         widget_type = word;
                         first_word = false;
+                    } else {
+                        widget_type = "slider";
+                        params.push_back(word);
+                        first_word = false;
                     }
                 } else {
                     params.push_back(word);
@@ -274,8 +358,14 @@ private:
                 word.clear();
             }
         }
-        if (!word.empty() && !first_word) {
-            params.push_back(word);
+        if (!word.empty()) {
+            if (first_word) {
+                if (m_is_content_string(word)) {
+                    widget_type = word;
+                }
+            } else {
+                params.push_back(word);
+            }
         }
 
         return (uniform_found && type_found && name_found);
@@ -300,14 +390,33 @@ private:
 /*
 * class used for expsoe internal function of Uniforms class for test
 */
-class Uniform_Internal {
+class UniformStrings {
 public:
     // uniform pos, uniform line, uniform end
-    typedef std::unordered_map<size_t, UniformParsingDatas> UniformStringContainer;
+    typedef std::unordered_map<size_t, UniformParsingDatas> UniformStringsContainer;
+
+private:
+    UniformStringsContainer m_uniform_strings;
 
 public:
-    UniformStringContainer m_get_uniform_strings(const std::string& vCode) {
-        UniformStringContainer res;
+    std::string parse_and_filter_code(const std::string& vCode) {
+        std::string final_code = vCode;
+        auto _uniform_strings = m_get_uniform_strings(final_code);
+        if (!_uniform_strings.empty()) {
+            final_code = m_filter_code(final_code, _uniform_strings);
+        }
+        return final_code;
+    }
+    const UniformStringsContainer& get_uniform_strings() {
+        return m_uniform_strings;
+    }
+    UniformStringsContainer& get_uniforms_strings_ref() {
+        return m_uniform_strings;
+    }
+
+protected:
+    UniformStringsContainer m_get_uniform_strings(const std::string& vCode) {
+        UniformStringsContainer res;
         size_t uniform_pos = 0U;
         while (uniform_pos != std::string::npos) {
             uniform_pos = vCode.find("uniform", uniform_pos);
@@ -325,16 +434,18 @@ public:
     }
 
     // will replace bad glsl uniform code (code with declarative uniform syntax) to good uniform code
-    std::string m_filter_code(const std::string& vCode, const UniformStringContainer& vContainer) {
+    std::string m_filter_code(const std::string& vCode, const UniformStringsContainer& vContainer) {
         std::string final_code = vCode;
         size_t offset = 0;
         for (auto _uniform_datas : vContainer) {
             const auto& datas = _uniform_datas.second;
-            const auto& uniform_code = datas.getFinalUniformCode();
-            size_t pos = _uniform_datas.first - offset;
-            final_code.replace(pos, datas.uniform_line_size, uniform_code);
-            offset += datas.uniform_line_size - uniform_code.size();  // le nouveau code sera frocemment plus court
-            assert(offset != std::string::npos);
+            if (!datas.widget_type.empty()) {
+                const auto& uniform_code = datas.getFinalUniformCode();
+                size_t pos = _uniform_datas.first - offset;
+                final_code.replace(pos, datas.uniform_line.size(), uniform_code);
+                offset += datas.uniform_line.size() - uniform_code.size();  // le nouveau code sera frocemment plus court
+                assert(offset != std::string::npos);
+            }
         }
 #ifdef _DEBUG
         m_save_string_to_file(final_code, "debug/shader.glsl");
@@ -342,6 +453,7 @@ public:
         return final_code;
     }
 
+#ifdef _DEBUG
     void m_save_string_to_file(const std::string& vString, const std::string& vFilePathName) {
         std::ofstream fileWriter(vFilePathName, std::ios::out);
         if (!fileWriter.bad()) {
@@ -349,24 +461,23 @@ public:
             fileWriter.close();
         }
     }
+#endif
 };
 
-class Uniforms : private Uniform_Internal {
+class UniformsManager : public UniformStrings {
 public:
+    typedef std::map<std::string, IUniform*> UniformsContainer;
 
 private:
-    std::map<std::string, IUniform*> uniforms;
+    UniformsContainer m_uniforms;
 
 public:
-    std::string parse_and_filter_code(const std::string& vCode) {
-        std::string final_code = vCode;
-        auto _uniform_strings = m_get_uniform_strings(final_code);
-        if (!_uniform_strings.empty()) {
-            final_code = m_filter_code(final_code, _uniform_strings);
-        }
-        return final_code;
+    const UniformsContainer& get_uniforms() {
+        return m_uniforms;
     }
-    
+    UniformsContainer& get_uniforms_ref() {
+        return m_uniforms;
+    }
 };
 
 }  // namespace glApi

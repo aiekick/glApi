@@ -9,7 +9,7 @@ int main(int argc, char** argv)
         return Test_glApi(argv[1]) ? 0 : 1;
 	}
 
-	return Test_glApi("Test_glApi_Uniforms_Parsing_Good_Syntax_10") ? 0 : 1;
+	return Test_glApi("Test_glApi_Uniforms_Parsing_Buffer_Widget_0") ? 0 : 1;
 
 	return 0;
 }
