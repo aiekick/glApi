@@ -38,98 +38,6 @@ SOFTWARE.
 
 namespace glApi {
 
-class IUniform {
-public:
-    typedef std::function<void(IUniform*)> IUniformDrawWidgetFunctor;
-
-protected:
-    std::string m_name;
-    GLint m_loc = -1;
-    GLuint m_channels = 1U;
-    bool m_used = false;
-    bool m_showed = false;
-    IUniformDrawWidgetFunctor m_draw_widget_functor = nullptr;
-
-public:
-    void set_draw_widget_functor(const IUniformDrawWidgetFunctor& vUniformDrawWidgetFunctor) {
-        m_draw_widget_functor = vUniformDrawWidgetFunctor;
-    }
-    virtual bool draw_widget() {
-        if (m_draw_widget_functor != nullptr) {
-            m_draw_widget_functor(this);
-        }
-    };
-    const char* get_general_help() {
-        return u8R"(
-general syntax is : 
-- uniform type(widget:params) name; // simple or multiline comment
-)";
-    }
-    virtual bool upload() = 0;
-    virtual const char* get_help() = 0;
-};
-
-class UniformTime : public IUniform {
-private:
-    bool m_play = false;
-    float m_time = 0.0f;
-
-public:
-    bool upload() override {
-        return false;
-    }
-    const char* get_help() override {
-        return u8R"(
-buffer uniform syantax :(default is optional)
-- uniform float(time:default) name;
-)";
-    }
-};
-
-class UniformBuffer : public IUniform {
-private:
-public:
-    bool upload() override {
-        return false;
-    }
-    const char* get_help() override {
-        return u8R"(
-buffer uniform syantax :
-- resolution :
-  - vec2 resolution => uniform vec2(buffer) name;
-  - vec3 resolution => uniform vec2(buffer) name; (like shadertoy resolution)
-- sampler2D back buffer : (target is optional. n is the fbo attachment id frrm 0 to 7)
-  - uniform sampler2D(buffer) name; => for target == 0
-  - uniform sampler2D(buffer:target=n) name; => for target == n
-)";
-    }
-};
-
-class UniformSlider : public IUniform {
-private:
-public:
-    bool upload() override {
-        return false;
-    }
-    const char* get_help() override {
-        return u8R"(
-slider uniform syntax : (default and step are otionals)
-- uniform float(inf:sup:default:step) name;
-- uniform vec2(inf:sup:default:step) name;
-- uniform vec3(inf:sup:default:step) name;
-- uniform vec4(inf:sup:default:step) name;
-- uniform int(inf:sup:default:step) name;
-- uniform ivec2(inf:sup:default:step) name;
-- uniform ivec3(inf:sup:default:step) name;
-- uniform ivec4(inf:sup:default:step) name;
-- uniform uint(inf:sup:default:step) name;
-- uniform uvec2(inf:sup:default:step) name;
-- uniform uvec3(inf:sup:default:step) name;
-- uniform uvec4(inf:sup:default:step) name;
-)";
-    }
-};
-
 class UniformParsingDatas {
 public:
     std::string uniform_line;
@@ -199,7 +107,7 @@ private:
         auto first_comment = vUniformString.find("//");
         auto pos = vUniformString.find("uniform");
         if (first_comment != std::string::npos && first_comment < pos) {
-            return false;        
+            return false;
         }
 
         if (first_comment > pos && pos != std::string::npos) {
@@ -214,7 +122,7 @@ private:
                 if (vUniformString[type_pos] == '(') {
                     return (uniform_found && type_found && name_found);
                 }
-                //pos = type_pos;
+                // pos = type_pos;
                 size_t first_parenthesis_pos = vUniformString.find('(', type_pos + 1);
                 if (first_parenthesis_pos != std::string::npos) {
                     first_parenthesis_pos += 1;
@@ -388,8 +296,8 @@ private:
 };
 
 /*
-* class used for expsoe internal function of Uniforms class for test
-*/
+ * class used for expsoe internal function of Uniforms class for test
+ */
 class UniformStrings {
 public:
     // uniform pos, uniform line, uniform end
@@ -463,6 +371,169 @@ protected:
     }
 #endif
 };
+
+class IUniform {
+public:
+    typedef std::function<void(IUniform*)> IUniformDrawWidgetFunctor;
+
+protected:
+    std::string m_name;
+    GLint m_loc = -1;
+    GLuint m_channels = 1U;
+    bool m_used = false;
+    bool m_showed = false;
+    std::string m_type;
+    std::string m_widget;
+    IUniformDrawWidgetFunctor m_draw_widget_functor = nullptr;
+    UniformParsingDatas m_uniform_parsing_datas;
+
+public:
+    void set_uniform_parsing_datas(const UniformParsingDatas& vUniformParsingDatas) {
+        m_uniform_parsing_datas = vUniformParsingDatas;
+    }
+    void set_draw_widget_functor(const IUniformDrawWidgetFunctor& vUniformDrawWidgetFunctor) {
+        m_draw_widget_functor = vUniformDrawWidgetFunctor;
+    }
+    virtual bool draw_widget() {
+        if (m_draw_widget_functor != nullptr) {
+            m_draw_widget_functor(this);
+        }
+    };
+    const char* get_general_help() {
+        return u8R"(
+general syntax is : 
+- uniform type(widget:params) name; // simple or multiline comment
+)";
+    }
+    virtual const char* get_help(){};
+    virtual bool upload_sampler(int32_t& texture_slot_id){};
+    virtual bool upload_scalar(){};
+};
+
+class UniformTime : public IUniform {
+private:
+    bool m_play = false;
+    float m_time = 0.0f;
+
+public:
+    bool upload_scalar() override {
+        if (m_loc > 0) {
+            glUniform1fv(m_loc, 1, &m_time); 
+            CheckGLErrors;
+            return true;
+        }
+        return false;
+    }
+    const char* get_help() override {
+        return u8R"(
+buffer uniform syantax :(default is optional)
+- uniform float(time:default) name;
+)";
+    }
+};
+
+class UniformBuffer : public IUniform {
+private:
+    std::array<float, 3U> m_size = {};
+    int32_t m_sampler2D = -1;  // sampler2D
+
+public:
+    UniformBuffer() {
+        m_widget = "buffer";
+    }
+    bool upload_scalar() override {
+        if (m_loc > 0) {
+            switch (m_channels) {
+                case 2U: glUniform2fv(m_loc, 1, m_size.data()); break;
+                case 3U: glUniform3fv(m_loc, 1, m_size.data()); break;
+            }
+            CheckGLErrors;
+            return true;
+        }
+        return false;
+    }
+    bool upload_sampler(int32_t& texture_slot_id) override {
+        if (m_loc > 0) {
+            glActiveTexture(GL_TEXTURE0 + texture_slot_id);
+            CheckGLErrors;
+            glBindTexture(GL_TEXTURE_2D, m_sampler2D);
+            CheckGLErrors;
+            glUniform1i(m_loc, texture_slot_id);
+            CheckGLErrors;
+            ++texture_slot_id;
+            return true;
+        }
+        return false;    
+    }
+    const char* get_help() override {
+        return u8R"(
+buffer uniform syantax :
+- resolution :
+  - vec2 resolution => uniform vec2(buffer) name;
+  - vec3 resolution => uniform vec2(buffer) name; (like shadertoy resolution)
+- sampler2D back buffer : (target is optional. n is the fbo attachment id frrm 0 to 7)
+  - uniform sampler2D(buffer) name; => for target == 0
+  - uniform sampler2D(buffer:target=n) name; => for target == n
+)";
+    }
+};
+
+class UniformSlider : public IUniform {
+public:
+    const char* get_help() override {
+        return u8R"(
+float slider uniform syntax : (default and step are otionals)
+- uniform float(inf:sup:default:step) name;
+- uniform vec2(inf:sup:default:step) name;
+- uniform vec3(inf:sup:default:step) name;
+- uniform vec4(inf:sup:default:step) name;
+- uniform int(inf:sup:default:step) name;
+- uniform ivec2(inf:sup:default:step) name;
+- uniform ivec3(inf:sup:default:step) name;
+- uniform ivec4(inf:sup:default:step) name;
+)";
+    }
+};
+class UniformFloatSlider : public UniformSlider {
+private:
+    std::array<float, 4U> m_datas_f;
+
+public:
+    bool upload_scalar() override {
+        if (m_loc > 0) {
+            switch (m_channels) {
+                case 1U: glUniform2fv(m_loc, 1, m_datas_f.data()); break;
+                case 2U: glUniform2fv(m_loc, 1, m_datas_f.data()); break;
+                case 3U: glUniform3fv(m_loc, 1, m_datas_f.data()); break;
+                case 4U: glUniform2fv(m_loc, 1, m_datas_f.data()); break;
+            }
+            CheckGLErrors;
+            return true;
+        }
+        return false;
+    }
+};
+
+class UniformIntSlider : public UniformSlider {
+private:
+    std::array<int32_t, 4U> m_datas_i;
+
+public:
+    bool upload_scalar() override {
+        if (m_loc > 0) {
+            switch (m_channels) {
+                case 1U: glUniform2iv(m_loc, 1, m_datas_i.data()); break;
+                case 2U: glUniform2iv(m_loc, 1, m_datas_i.data()); break;
+                case 3U: glUniform3iv(m_loc, 1, m_datas_i.data()); break;
+                case 4U: glUniform2iv(m_loc, 1, m_datas_i.data()); break;
+            }
+            CheckGLErrors;
+            return true;
+        }
+        return false;
+    }
+};
+
 
 class UniformsManager : public UniformStrings {
 public:

@@ -59,6 +59,11 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 // the order is important
 // so dont reorder these includes
 
+// 'auto' mean auto configuration
+// uniform params from code
+// fbo params from code
+// like SoGLSL
+
 #include "texture.hpp"
 #include "fbo.hpp"
 #include "mesh.hpp"
@@ -66,5 +71,8 @@ static inline void checkGLErrors(const char* vFile, const char* vFunc, const int
 #include "procMesh.hpp"
 #include "uniforms.hpp"
 #include "shader.hpp"
+#include "shaderauto.hpp"
 #include "program.hpp"
+#include "programauto.hpp"
 #include "quadVfx.hpp"
+#include "quadVfxauto.hpp"
