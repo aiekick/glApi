@@ -1,0 +1,3 @@
+[submodule "glApi"]
+	path = glApi
+	url = https://github.com/aiekick/glApi.git

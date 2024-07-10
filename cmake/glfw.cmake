@@ -1,0 +1,23 @@
+set(GLFW_BUILD_DOCS ON CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_SHARED_LIBRARY OFF CACHE BOOL "" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glfw EXCLUDE_FROM_ALL)
+
+if(USE_SHARED_LIBS)
+	set_target_properties(glfw PROPERTIES FOLDER 3rdparty/Shared)
+	set_target_properties(update_mappings PROPERTIES FOLDER 3rdparty/Shared)
+else()
+	set_target_properties(glfw PROPERTIES FOLDER 3rdparty/Static)
+	set_target_properties(update_mappings PROPERTIES FOLDER 3rdparty/Static)
+endif()
+
+set(GLFW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glfw/include)
+set(GLFW_DEFINITIONS -DGLFW_INCLUDE_NONE)
+set(GLFW_LIBRARIES ${GLFW_LIBRARIES} glfw)
+
+set_target_properties(glfw PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${FINAL_BIN_DIR}")
+set_target_properties(glfw PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
+set_target_properties(glfw PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
