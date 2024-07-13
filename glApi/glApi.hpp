@@ -25,7 +25,7 @@ SOFTWARE.
 #pragma once
 
 #include <glad/glad.h>
-#include <InAppGpuProfiler.h>
+#include <iagp/iagp.h>
 
 #ifdef MSVC
 #define __PRETTY_FUNCTION__ __FUNCSIG__

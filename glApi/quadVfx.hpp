@@ -32,7 +32,12 @@ SOFTWARE.
  */
 
 #include "glApi.hpp"
-#include <ImGuiPack.h>
+
+#ifdef IMGUI_INCLUDE
+#include IMGUI_INCLUDE
+#else
+#include <imgui.h>
+#endif
 
 #include <array>
 #include <memory>
