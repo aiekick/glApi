@@ -177,7 +177,7 @@ public:
         int32_t vSampler2D,               //
         const bool& vShowWidget) {
         assert(m_ProgramPtr != nullptr);
-        m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D);
+        m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D, vShowWidget);
     }
     void finalizeBeforeRendering() {
         assert(m_ProgramPtr != nullptr);
@@ -223,11 +223,11 @@ public:
             }
         }
     }
-    GLuint getTextureId() {
+    GLuint getTextureId(const size_t& vBufferIdx = 0U) {
         assert(m_FBOPipeLinePtr != nullptr);
         auto front_fbo_ptr = m_FBOPipeLinePtr->getFrontFBO().lock();
         if (front_fbo_ptr != nullptr) {
-            return front_fbo_ptr->getTextureId();
+            return front_fbo_ptr->getTextureId(vBufferIdx);
         }    
         return 0U;
     }

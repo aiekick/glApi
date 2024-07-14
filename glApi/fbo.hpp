@@ -75,7 +75,7 @@ public:
             m_Textures.resize(m_CountBuffers);
             m_ColorDrawBuffers = new GLenum[m_CountBuffers];
             for (GLuint idx = 0U; idx < vCountBuffers; ++idx) {
-                m_Textures[idx] = Texture::createEmpty(vSX, vSY, vUseMipMapping);
+                m_Textures[idx] = Texture::createEmpty(vSX, vSY, "clamp", "nearest", vUseMipMapping);
                 if (m_Textures[idx] != nullptr) {
                     m_ColorDrawBuffers[idx] = GL_COLOR_ATTACHMENT0 + (GLenum)idx;
                     glFramebufferTexture2D(GL_FRAMEBUFFER, m_ColorDrawBuffers[idx], GL_TEXTURE_2D, m_Textures[idx]->getTexId(), 0);

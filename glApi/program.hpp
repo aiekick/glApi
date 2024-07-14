@@ -161,7 +161,7 @@ public:
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
-    void addUniformSampler2D(const GLenum& vShaderType, const std::string& vUniformName, int32_t vSampler2D) {
+    void addUniformSampler2D(const GLenum& vShaderType, const std::string& vUniformName, int32_t vSampler2D, const bool& vShowWidget) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
         // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
@@ -169,6 +169,7 @@ public:
         uni.name = vUniformName;
         uni.data_s2d = vSampler2D;
         uni.channels = 0;
+        uni.showed = vShowWidget;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
@@ -265,6 +266,11 @@ public:
                                     case 3U: ImGui::DragInt3(uni.second.name.c_str(), uni.second.datas_i); break;
                                     case 4U: ImGui::DragInt4(uni.second.name.c_str(), uni.second.datas_i); break;
                                 }
+                            } else if (uni.second.data_s2d != 0U) {
+                                ImGui::Text(uni.second.name.c_str());
+                                ImGui::Indent();
+                                ImGui::Image((ImTextureID)uni.second.data_s2d, ImVec2(64.0f, 64.0f));
+                                ImGui::Unindent();
                             }
                         }
                     }
