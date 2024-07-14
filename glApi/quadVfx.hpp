@@ -231,6 +231,10 @@ public:
         }    
         return 0U;
     }
+    FBOWeak getFrontFBO() {
+        assert(m_FBOPipeLinePtr != nullptr);
+        return m_FBOPipeLinePtr->getFrontFBO();    
+    }
     void drawImGuiThumbnail(const float& vSx, const float& vSy, const float& vScaleInv) {
         assert(m_FBOPipeLinePtr != nullptr);
         auto front_fbo_ptr = m_FBOPipeLinePtr->getFrontFBO().lock();

@@ -97,7 +97,7 @@ private:
 
         uniform_line = vUniformString;
 
-        // we wnat to gety all theses
+        // we wnat to get all theses
         // uniform type(widget:params) name; comment
 
         bool uniform_found = false;

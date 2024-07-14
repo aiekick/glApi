@@ -33,7 +33,6 @@ SOFTWARE.
  */
 
 #include "glApi.hpp"
-#include <ImGuiPack.h>
 
 #include <array>
 #include <memory>
