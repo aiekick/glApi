@@ -91,7 +91,7 @@ public:
     }
 
     bool bind() {
-        AIGPScoped("FBO", "bind");
+        PROFILER_SCOPED("FBO", "bind");
         if (m_FBOId > 0) {
             glBindFramebuffer(GL_FRAMEBUFFER, m_FBOId);
             CheckGLErrors;
@@ -101,7 +101,7 @@ public:
     }
 
     void clearBuffer(const std::array<float, 4U>& vColor) {
-        AIGPScoped("FBO", "clearBuffer");
+        PROFILER_SCOPED("FBO", "clearBuffer");
         if (bind()) {
             glClearColor(vColor[0], vColor[1], vColor[2], vColor[3]); 
             glClear(GL_COLOR_BUFFER_BIT);
@@ -111,7 +111,7 @@ public:
 
     void updateMipMaping() {
         if (m_UseMipMapping) {
-            AIGPScoped("FBO", "updateMipMaping %u", m_FBOId);
+            PROFILER_SCOPED("FBO", "updateMipMaping %u", m_FBOId);
             for (auto& tex_ptr : m_Textures) {
                 if (tex_ptr != nullptr) {
                     tex_ptr->updateMipMaping();
@@ -121,13 +121,13 @@ public:
     }
     
     void selectBuffers() {
-        AIGPScoped("FBO", "glDrawBuffers");
+        PROFILER_SCOPED("FBO", "glDrawBuffers");
         glDrawBuffers(m_CountBuffers, m_ColorDrawBuffers);
         CheckGLErrors;
     }
 
     void unbind() {
-        AIGPScoped("FBO", "unbind");
+        PROFILER_SCOPED("FBO", "unbind");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D, 0);

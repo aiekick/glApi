@@ -173,7 +173,7 @@ public:
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
-        AIGPScoped(m_ProgramName, "uploadUniforms");
+        IAGPScoped(m_ProgramName, "uploadUniforms");
         int32_t textureSlotId = 0;
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {
@@ -184,19 +184,19 @@ public:
                     if (uni.second.datas_f != nullptr) {
                         switch (uni.second.channels) {
                             case 1U: {
-                                AIGPScopedPtr(&uni, "upload float", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload float", "%s", uni.second.name.c_str());
                                 glUniform1fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                             case 2U: {
-                                AIGPScopedPtr(&uni, "upload vec2", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload vec2", "%s", uni.second.name.c_str());
                                 glUniform2fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                             case 3U: {
-                                AIGPScopedPtr(&uni, "upload vec3", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload vec3", "%s", uni.second.name.c_str());
                                 glUniform3fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                             case 4U: {
-                                AIGPScopedPtr(&uni, "upload vec4", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload vec4", "%s", uni.second.name.c_str());
                                 glUniform4fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                         }
@@ -204,25 +204,25 @@ public:
                     } else if (uni.second.datas_i != nullptr) {
                         switch (uni.second.channels) {
                             case 1U: {
-                                AIGPScopedPtr(&uni, "upload int", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload int", "%s", uni.second.name.c_str());
                                 glUniform1iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                             case 2U: {
-                                AIGPScopedPtr(&uni, "upload iec2", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload iec2", "%s", uni.second.name.c_str());
                                 glUniform2iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                             case 3U: {
-                                AIGPScopedPtr(&uni, "upload ivec3", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload ivec3", "%s", uni.second.name.c_str());
                                 glUniform3iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                             case 4U: {
-                                AIGPScopedPtr(&uni, "upload ivec4", "%s", uni.second.name.c_str());
+                                IAGPScopedPtr(&uni, "upload ivec4", "%s", uni.second.name.c_str());
                                 glUniform4iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                         }
                         CheckGLErrors;
                     } else if (uni.second.data_s2d > -1) {
-                        AIGPScopedPtr(&uni, "upload sampler2D", "%s", uni.second.name.c_str());
+                        IAGPScopedPtr(&uni, "upload sampler2D", "%s", uni.second.name.c_str());
                         glActiveTexture(GL_TEXTURE0 + textureSlotId);
                         CheckGLErrors;
                         glBindTexture(GL_TEXTURE_2D, uni.second.data_s2d);

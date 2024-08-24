@@ -25,7 +25,14 @@ SOFTWARE.
 #pragma once
 
 #include <glad/glad.h>
-#include <iagp/iagp.h>
+
+#ifndef PROFILER_INCLUDE
+#include PROFILER_INCLUDE
+#endif  // PROFILER_SCOPED
+
+#ifndef PROFILER_SCOPED
+#define PROFILER_SCOPED
+#endif // PROFILER_SCOPED
 
 #ifdef MSVC
 #define __PRETTY_FUNCTION__ __FUNCSIG__

@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.0)
+
 project(glApi)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include_directories(.)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 enable_testing()
 add_definitions(-DTEST_ENABLED)

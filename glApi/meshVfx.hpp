@@ -197,19 +197,19 @@ public:
         if (m_RenderingPause) {
             return;
         }
-        AIGPScoped("Mesh VFX", "Render %s", m_Name.c_str());
+        IAGPScoped("Mesh VFX", "Render %s", m_Name.c_str());
         auto quad_ptr = m_ProcMesh.lock();
         assert(quad_ptr != nullptr);
         assert(m_FBOPipeLinePtr != nullptr);
         assert(m_ProgramPtr != nullptr);
         for (GLuint idx = 0; idx < m_RenderIterations; ++idx) {
-            AIGPScoped("Mesh VFX", "Iter %i", idx);
+            IAGPScoped("Mesh VFX", "Iter %i", idx);
             if (m_FBOPipeLinePtr->bind()) {
                 if (m_ProgramPtr->use()) {
                     m_ProgramPtr->uploadUniforms(m_FBOPipeLinePtr);
                     m_FBOPipeLinePtr->selectBuffers();
                     {
-                        AIGPScoped("Opengl", "glViewport");
+                        IAGPScoped("Opengl", "glViewport");
                         glViewport(0, 0, m_Size[0], m_Size[1]);
                     }
                     quad_ptr->render(GL_TRIANGLES);

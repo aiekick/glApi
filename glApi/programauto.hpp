@@ -173,7 +173,7 @@ public:
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
-        AIGPScoped(m_ProgramAutoName, "uploadUniforms");
+        IAGPScoped(m_ProgramAutoName, "uploadUniforms");
         int32_t textureSlotId = 0;
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {

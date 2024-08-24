@@ -141,7 +141,7 @@ public:
 
     void updateMipMaping() {
         if (m_EnableMipMap) {
-            AIGPScoped("Opengl", "glGenerateMipmap %u", m_TexId);
+            IAGPScoped("Opengl", "glGenerateMipmap %u", m_TexId);
             glGenerateMipmap(GL_TEXTURE_2D);
             CheckGLErrors;
             glFinish();
