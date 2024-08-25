@@ -26,15 +26,17 @@ SOFTWARE.
 
 #include <glad/glad.h>
 
+#include <string>
+
 #ifdef PROFILER_INCLUDE
 #include PROFILER_INCLUDE
 #endif  // PROFILER_SCOPED
 
-#ifndef PROFILER_SCOPED
+#ifdef PROFILER_SCOPED
 #define PROFILER_SCOPED
 #endif // PROFILER_SCOPED
 
-#ifndef PROFILER_SCOPED_PTR
+#ifdef PROFILER_SCOPED_PTR
 #define PROFILER_SCOPED_PTR
 #endif  // PROFILER_SCOPED_PTR
 

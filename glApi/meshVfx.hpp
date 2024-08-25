@@ -69,8 +69,8 @@ public:
         const GLsizei& vSx,             //
         const GLsizei& vSy,             //
         const uint32_t& vCountBuffers,  //
-        const bool& vUseMipMapping,     //
-        const bool& vMultiPass) {       //
+        const bool vUseMipMapping,     //
+        const bool vMultiPass) {       //
         auto res = std::make_shared<MeshVfx>();
         res->m_This = res;
         if (!res->init(vName, vProcMesh, vVertFile, vFragFile, vSx, vSy, vCountBuffers, vUseMipMapping, vMultiPass)) {
@@ -93,8 +93,8 @@ public:
         const GLsizei& vSx,             //
         const GLsizei& vSy,             //
         const uint32_t& vCountBuffers,  //
-        const bool& vUseMipMapping,     //
-        const bool& vMultiPass) {       //
+        const bool vUseMipMapping,     //
+        const bool vMultiPass) {       //
         assert(!vProcMesh.expired());
         assert(!vVertFile.empty());
         assert(!vFragFile.empty());
@@ -132,13 +132,13 @@ public:
     const std::array<GLuint, 2U>& getSize() {
         return m_Size;
     }
-    void setRenderingIterations(const GLuint& vRenderingIterations) {
+    void setRenderingIterations(const GLuint vRenderingIterations) {
         m_RenderIterations = vRenderingIterations;
     }
     GLuint& getRenderingIterationsRef() {
         return m_RenderIterations;
     }
-    void setRenderingPause(const bool& vRenderingPause) {
+    void setRenderingPause(const bool vRenderingPause) {
         m_RenderingPause = vRenderingPause;
     }
     bool& getRenderingPauseRef() {
@@ -149,30 +149,30 @@ public:
         m_ProgramPtr->setUniformPreUploadFunctor(vUniformPreUploadFunctor);
     }
     void addUniformFloat(                 //
-        const GLenum& vShaderType,        //
+        const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         float* vUniformPtr,               //
-        const GLuint& vCountChannels,     //
-        const bool& vShowWidget,          //
+        const GLuint vCountChannels,     //
+        const bool vShowWidget,          //
         const Program::UniformWidgetFunctor& vWidgetFunctor) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformFloat(vShaderType, vUniformName, vUniformPtr, vCountChannels, vShowWidget, vWidgetFunctor);
     }
     void addUniformInt(                   //
-        const GLenum& vShaderType,        //
+        const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         int32_t* vUniformPtr,             //
-        const GLuint& vCountChannels,     //
-        const bool& vShowWidget,          //
+        const GLuint vCountChannels,     //
+        const bool vShowWidget,          //
         const Program::UniformWidgetFunctor& vWidgetFunctor) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformInt(vShaderType, vUniformName, vUniformPtr, vCountChannels, vShowWidget, vWidgetFunctor);
     }
     void addUniformSampler2D(             //
-        const GLenum& vShaderType,        //
+        const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         int32_t vSampler2D,               //
-        const bool& vShowWidget) {
+        const bool vShowWidget) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D);
     }

@@ -25,6 +25,7 @@ SOFTWARE.
 #pragma once
 
 #include "glApi.hpp"
+#include <array>
 #include <vector>
 #include <memory>
 
@@ -46,7 +47,7 @@ private:
     GLenum* m_ColorDrawBuffers = nullptr;
 
 public:
-    static FBOPtr create(const GLsizei& vSX, const GLsizei& vSY, const GLuint& vCountBuffers, const bool& vUseMipMapping) {
+    static FBOPtr create(const GLsizei& vSX, const GLsizei& vSY, const GLuint vCountBuffers, const bool vUseMipMapping) {
         auto res = std::make_shared<FBO>();
         res->m_This = res;
         if (!res->init(vSX, vSY, vCountBuffers, vUseMipMapping)) {
@@ -61,7 +62,7 @@ public:
         unit();
     }
 
-    bool init(const GLsizei& vSX, const GLsizei& vSY, const GLuint& vCountBuffers, const bool& vUseMipMapping) {
+    bool init(const GLsizei& vSX, const GLsizei& vSY, const GLuint vCountBuffers, const bool vUseMipMapping) {
         bool res = false;
         m_SizeX = vSX;
         m_SizeY = vSY;
@@ -91,7 +92,9 @@ public:
     }
 
     bool bind() {
+#ifdef PROFILER_SCOPED
         PROFILER_SCOPED("FBO", "bind");
+#endif
         if (m_FBOId > 0) {
             glBindFramebuffer(GL_FRAMEBUFFER, m_FBOId);
             CheckGLErrors;
@@ -101,7 +104,9 @@ public:
     }
 
     void clearBuffer(const std::array<float, 4U>& vColor) {
+#ifdef PROFILER_SCOPED
         PROFILER_SCOPED("FBO", "clearBuffer");
+#endif
         if (bind()) {
             glClearColor(vColor[0], vColor[1], vColor[2], vColor[3]); 
             glClear(GL_COLOR_BUFFER_BIT);
@@ -111,7 +116,9 @@ public:
 
     void updateMipMaping() {
         if (m_UseMipMapping) {
+#ifdef PROFILER_SCOPED
             PROFILER_SCOPED("FBO", "updateMipMaping %u", m_FBOId);
+#endif
             for (auto& tex_ptr : m_Textures) {
                 if (tex_ptr != nullptr) {
                     tex_ptr->updateMipMaping();
@@ -121,13 +128,17 @@ public:
     }
     
     void selectBuffers() {
+#ifdef PROFILER_SCOPED
         PROFILER_SCOPED("FBO", "glDrawBuffers");
+#endif
         glDrawBuffers(m_CountBuffers, m_ColorDrawBuffers);
         CheckGLErrors;
     }
 
     void unbind() {
+#ifdef PROFILER_SCOPED
         PROFILER_SCOPED("FBO", "unbind");
+#endif
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -222,7 +233,7 @@ private:
     bool m_MultiPass = false;
 
 public:
-    static FBOPipeLinePtr create(const GLsizei& vSX, const GLsizei& vSY, const GLuint& vCountBuffers, const bool& vUseMipMapping, const bool& vMultiPass) {
+    static FBOPipeLinePtr create(const GLsizei& vSX, const GLsizei& vSY, const GLuint vCountBuffers, const bool vUseMipMapping, const bool vMultiPass) {
         auto res = std::make_shared<FBOPipeLine>();
         res->m_This = res;
         if (!res->init(vSX, vSY, vCountBuffers, vUseMipMapping, vMultiPass)) {
@@ -236,7 +247,7 @@ public:
     virtual ~FBOPipeLine() {
         unit();
     }
-    bool init(const GLsizei& vSX, const GLsizei& vSY, const GLuint& vCountBuffers, const bool& vUseMipMapping, const bool& vMultiPass) {
+    bool init(const GLsizei& vSX, const GLsizei& vSY, const GLuint vCountBuffers, const bool vUseMipMapping, const bool vMultiPass) {
         bool res = true;
         m_MultiPass = vMultiPass;
         m_FrontFBOPtr = FBO::create(vSX, vSY, vCountBuffers, vUseMipMapping);

@@ -25,7 +25,10 @@ SOFTWARE.
 #pragma once
 
 #include "glApi.hpp"
+
+#include <cassert>
 #include <memory>
+#include <string>
 
 namespace glApi {
 
@@ -42,7 +45,7 @@ private:
     GLsizei m_Height = 0U;
     GLuint m_ChannelsCount = 0U;
     GLenum m_Format = GL_RGBA;
-    GLenum m_Internalformat = GL_RGBA32F;
+    GLenum m_InternalFormat = GL_RGBA32F;
     GLenum m_PixelFormat = GL_FLOAT;
     GLenum m_WrapS = GL_REPEAT;
     GLenum m_WrapT = GL_REPEAT;
@@ -55,6 +58,24 @@ public:
         auto res = std::make_shared<Texture>();
         res->m_This = res;
         if (!res->initEmpty(vSx, vSy, vWrap, vFilter, vEnableMipMap)) {
+            res.reset();
+        }
+        return res;
+    }
+    // wrap (repeat|mirror|clamp), filter (linear|nearest)
+    static TexturePtr createFromBuffer(const uint8_t* vBuffer,
+                                       const GLsizei vSx,
+                                       const GLsizei vSy,
+                                       const GLenum vInternalFormat,
+                                       const GLenum vFormat,
+                                       const GLenum vPixelFormat,
+                                       const bool vInvertY,
+                                       const std::string vWrap,
+                                       const std::string vFilter,
+                                       const bool vEnableMipMap) {
+        auto res = std::make_shared<Texture>();
+        res->m_This = res;
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vInvertY, vWrap, vFilter, vEnableMipMap)) {
             res.reset();
         }
         return res;
@@ -94,13 +115,48 @@ public:
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
         m_setFormat(GL_FLOAT, 4);
-        glTexImage2D(GL_TEXTURE_2D, 0, m_Internalformat, vSx, vSy, 0, m_Format, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, vSx, vSy, 0, m_Format, GL_FLOAT, nullptr);
         CheckGLErrors;
         glFinish();
         CheckGLErrors;
         m_setParameters("mirror", "linear", vEnableMipMap);
         glFinish();
         CheckGLErrors;        
+        glBindTexture(GL_TEXTURE_2D, 0);
+        CheckGLErrors;
+        return check();
+    }
+
+    // wrap (repeat|mirror|clamp), filter (linear|nearest)
+    bool initFromBuffer(const uint8_t* vBuffer,
+                        const GLsizei vSx,
+                        const GLsizei vSy,
+                        const GLenum vInternalFormat,
+                        const GLenum vFormat,
+                        const GLenum vPixelFormat,
+                        const bool vInvertY,
+                        const std::string vWrap,
+                        const std::string vFilter,
+                        const bool vEnableMipMap) {
+        assert(vBuffer != nullptr);
+        assert(vSx > 0);
+        assert(vSy > 0);
+        m_Width = vSx;
+        m_Height = vSy;
+        glGenTextures(1, &m_TexId);
+        CheckGLErrors;
+        glBindTexture(GL_TEXTURE_2D, m_TexId);
+        CheckGLErrors;
+        m_InternalFormat = vInternalFormat;
+        m_Format = vFormat;
+        m_PixelFormat = vPixelFormat;
+        glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
+        CheckGLErrors;
+        glFinish();
+        CheckGLErrors;
+        m_setParameters(vWrap, vFilter, vEnableMipMap);
+        glFinish();
+        CheckGLErrors;
         glBindTexture(GL_TEXTURE_2D, 0);
         CheckGLErrors;
         return check();
@@ -127,7 +183,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, m_TexId);
         CheckGLErrors;
         m_setFormat(vPixelFormat, vChannelsCount);
-        glTexImage2D(GL_TEXTURE_2D, 0, m_Internalformat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_Format, m_PixelFormat, vBuffer);
         CheckGLErrors;
         glFinish();
         CheckGLErrors;
@@ -141,7 +197,9 @@ public:
 
     void updateMipMaping() {
         if (m_EnableMipMap) {
+#ifdef PROFILER_SCOPED
             PROFILER_SCOPED("Opengl", "glGenerateMipmap %u", m_TexId);
+#endif
             glGenerateMipmap(GL_TEXTURE_2D);
             CheckGLErrors;
             glFinish();
@@ -253,9 +311,9 @@ private:
             CheckGLErrors;
         }
     }
-    void m_setFormat(const GLenum& vPixelFormat, const GLint& vChannelsCount) {
-        assert(vPixelFormat == GL_UNSIGNED_BYTE ||  // format BYTE
-               vPixelFormat == GL_FLOAT);           // format FLOAT
+    void m_setFormat(const GLenum vPixelFormat, const GLint& vChannelsCount) {
+        assert(vPixelFormat == GL_UNSIGNED_BYTE ||                   // format BYTE
+               vPixelFormat == GL_FLOAT);                            // format FLOAT
         m_PixelFormat = vPixelFormat;
         m_ChannelsCount = vChannelsCount;
         // 1:r, 2:rg, 3:rgb, 4:rgba
@@ -263,33 +321,33 @@ private:
             case 1: {
                 m_Format = GL_RED;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_Internalformat = GL_RED;
+                    m_InternalFormat = GL_RED;
                 } else if (vPixelFormat == GL_FLOAT) {
-                    m_Internalformat = GL_R32F;
+                    m_InternalFormat = GL_R32F;
                 }
             } break;
             case 2: {
                 m_Format = GL_RG;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_Internalformat = GL_RG;
+                    m_InternalFormat = GL_RG;
                 } else if (vPixelFormat == GL_FLOAT) {
-                    m_Internalformat = GL_RG32F;
+                    m_InternalFormat = GL_RG32F;
                 }
             } break;
             case 3: {
                 m_Format = GL_RGB;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_Internalformat = GL_RGB;
+                    m_InternalFormat = GL_RGB;
                 } else if (vPixelFormat == GL_FLOAT) {
-                    m_Internalformat = GL_RGB32F;
+                    m_InternalFormat = GL_RGB32F;
                 }
             } break;
             case 4: {
                 m_Format = GL_RGBA;
                 if (vPixelFormat == GL_UNSIGNED_BYTE) {
-                    m_Internalformat = GL_RGBA;
+                    m_InternalFormat = GL_RGBA;
                 } else if (vPixelFormat == GL_FLOAT) {
-                    m_Internalformat = GL_RGBA32F;
+                    m_InternalFormat = GL_RGBA32F;
                 }
             } break;
         }

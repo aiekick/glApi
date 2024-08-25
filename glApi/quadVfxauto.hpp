@@ -35,8 +35,6 @@ SOFTWARE.
 
 #ifdef IMGUI_INCLUDE
 #include IMGUI_INCLUDE
-#else
-#include <imgui.h>
 #endif
 
 #include <array>
@@ -74,8 +72,8 @@ public:
         const GLsizei& vSx,             //
         const GLsizei& vSy,             //
         const uint32_t& vCountBuffers,  //
-        const bool& vUseMipMapping,     //
-        const bool& vMultiPass) {       //
+        const bool vUseMipMapping,     //
+        const bool vMultiPass) {       //
         auto res = std::make_shared<QuadVfxAuto>();
         res->m_This = res;
         if (!res->init(vName, vVertShader, vQuadMesh, vFragFile, vSx, vSy, vCountBuffers, vUseMipMapping, vMultiPass)) {
@@ -98,8 +96,8 @@ public:
         const GLsizei& vSx,             //
         const GLsizei& vSy,             //
         const uint32_t& vCountBuffers,  //
-        const bool& vUseMipMapping,     //
-        const bool& vMultiPass) {       //
+        const bool vUseMipMapping,     //
+        const bool vMultiPass) {       //
         assert(!vVertShader.expired());
         assert(!vQuadMesh.expired());
         assert(!vFragFile.empty());
@@ -135,13 +133,13 @@ public:
     const std::array<GLuint, 2U>& getSize() {
         return m_Size;
     }
-    void setRenderingIterations(const GLuint& vRenderingIterations) {
+    void setRenderingIterations(const GLuint vRenderingIterations) {
         m_RenderIterations = vRenderingIterations;
     }
     GLuint& getRenderingIterationsRef() {
         return m_RenderIterations;
     }
-    void setRenderingPause(const bool& vRenderingPause) {
+    void setRenderingPause(const bool vRenderingPause) {
         m_RenderingPause = vRenderingPause;
     }
     bool& getRenderingPauseRef() {
@@ -152,30 +150,30 @@ public:
         m_ProgramPtr->setUniformPreUploadFunctor(vUniformPreUploadFunctor);
     }
     void addUniformFloat(                 //
-        const GLenum& vShaderType,        //
+        const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         float* vUniformPtr,               //
-        const GLuint& vCountChannels,     //
-        const bool& vShowWidget,          //
+        const GLuint vCountChannels,     //
+        const bool vShowWidget,          //
         const ProgramAuto::UniformWidgetFunctor& vWidgetFunctor) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformFloat(vShaderType, vUniformName, vUniformPtr, vCountChannels, vShowWidget, vWidgetFunctor);
     }
     void addUniformInt(                   //
-        const GLenum& vShaderType,        //
+        const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         int32_t* vUniformPtr,             //
-        const GLuint& vCountChannels,     //
-        const bool& vShowWidget,          //
+        const GLuint vCountChannels,     //
+        const bool vShowWidget,          //
         const ProgramAuto::UniformWidgetFunctor& vWidgetFunctor) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformInt(vShaderType, vUniformName, vUniformPtr, vCountChannels, vShowWidget, vWidgetFunctor);
     }
     void addUniformSampler2D(             //
-        const GLenum& vShaderType,        //
+        const GLenum vShaderType,        //
         const std::string& vUniformName,  //
         int32_t vSampler2D,               //
-        const bool& vShowWidget) {
+        const bool vShowWidget) {
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->addUniformSampler2D(vShaderType, vUniformName, vSampler2D);
     }
@@ -200,19 +198,25 @@ public:
         if (m_RenderingPause) {
             return;
         }
+#ifdef PROFILER_SCOPED
         PROFILER_SCOPED("VFX", "Render %s", m_Name.c_str());
+#endif
         auto quad_ptr = m_QuadMesh.lock();
         assert(quad_ptr != nullptr);
         assert(m_FBOPipeLinePtr != nullptr);
         assert(m_ProgramPtr != nullptr);
         for (GLuint idx = 0; idx < m_RenderIterations; ++idx) {
+#ifdef PROFILER_SCOPED
             PROFILER_SCOPED("VFX", "Iter %i", idx);
+#endif
             if (m_FBOPipeLinePtr->bind()) {
                 if (m_ProgramPtr->use()) {
                     m_ProgramPtr->uploadUniforms(m_FBOPipeLinePtr);
                     m_FBOPipeLinePtr->selectBuffers();
                     {
+#ifdef PROFILER_SCOPED
                         PROFILER_SCOPED("Opengl", "glViewport");
+#endif
                         glViewport(0, 0, m_Size[0], m_Size[1]);
                     }
                     quad_ptr->render(GL_TRIANGLES);
@@ -231,6 +235,7 @@ public:
         }
         return 0U;
     }
+#ifdef IMGUI_INCLUDE
     void drawImGuiThumbnail(const float& vSx, const float& vSy, const float& vScaleInv) {
         assert(m_FBOPipeLinePtr != nullptr);
         auto front_fbo_ptr = m_FBOPipeLinePtr->getFrontFBO().lock();
@@ -245,6 +250,7 @@ public:
         assert(m_ProgramPtr != nullptr);
         m_ProgramPtr->drawUniformWidgets();
     }
+#endif
     void unit() {
         m_ProgramPtr.reset();
         m_FragShaderPtr.reset();

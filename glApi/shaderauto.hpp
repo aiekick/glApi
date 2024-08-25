@@ -45,7 +45,7 @@ private:
     UniformStrings m_UniformStrings;
 
 public:
-    static ShaderAutoPtr createFromFile(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vFile) {
+    static ShaderAutoPtr createFromFile(const std::string& vShaderName, const GLenum vShaderType, const std::string& vFile) {
         auto res = std::make_shared<ShaderAuto>();
         res->m_This = res;
         if (!res->initFromFile(vShaderName, vShaderType, vFile)) {
@@ -53,7 +53,7 @@ public:
         }
         return res;
     }
-    static ShaderAutoPtr createFromCode(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vCode) {
+    static ShaderAutoPtr createFromCode(const std::string& vShaderName, const GLenum vShaderType, const std::string& vCode) {
         auto res = std::make_shared<ShaderAuto>();
         res->m_This = res;
         if (!res->initFromCode(vShaderName, vShaderType, vCode)) {
@@ -68,7 +68,7 @@ public:
         unit();
     }
 
-    bool initFromFile(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vFile) {
+    bool initFromFile(const std::string& vShaderName, const GLenum vShaderType, const std::string& vFile) {
         assert(!vShaderName.empty());
         assert(!vFile.empty());
         assert(vShaderType > 0);
@@ -76,7 +76,7 @@ public:
         return initFromCode(vShaderName, vShaderType, code);
     }
 
-    bool initFromCode(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vCode) {
+    bool initFromCode(const std::string& vShaderName, const GLenum vShaderType, const std::string& vCode) {
         bool res = false;
         assert(!vShaderName.empty());
         assert(!vCode.empty());

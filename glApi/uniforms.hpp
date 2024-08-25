@@ -34,6 +34,8 @@ SOFTWARE.
 #include <map>
 #include <string>
 #include <cassert>
+#include <fstream>
+#include <functional>
 #include <unordered_map>
 
 namespace glApi {
@@ -62,7 +64,7 @@ public:
             return "uniform " + uniform_type + " " + uniform_name + "; // " + uniform_comment_original;
         }
     }
-    const bool& isValid() {
+    const bool isValid() {
         return valid;
     }
 

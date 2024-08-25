@@ -28,6 +28,7 @@ SOFTWARE.
 #include <map>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <cassert>
 
 namespace glApi {
@@ -44,7 +45,7 @@ private:
     GLenum m_ShaderType = 0;
 
 public:
-    static ShaderPtr createFromFile(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vFile) {
+    static ShaderPtr createFromFile(const std::string& vShaderName, const GLenum vShaderType, const std::string& vFile) {
         auto res = std::make_shared<Shader>();
         res->m_This = res;
         if (!res->initFromFile(vShaderName, vShaderType, vFile)) {
@@ -52,7 +53,7 @@ public:
         }
         return res;
     }
-    static ShaderPtr createFromCode(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vCode) {
+    static ShaderPtr createFromCode(const std::string& vShaderName, const GLenum vShaderType, const std::string& vCode) {
         auto res = std::make_shared<Shader>();
         res->m_This = res;
         if (!res->initFromCode(vShaderName, vShaderType, vCode)) {
@@ -67,7 +68,7 @@ public:
         unit();
     }
 
-    bool initFromFile(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vFile) {
+    bool initFromFile(const std::string& vShaderName, const GLenum vShaderType, const std::string& vFile) {
         assert(!vShaderName.empty());
         assert(!vFile.empty());
         assert(vShaderType > 0);
@@ -75,7 +76,7 @@ public:
         return initFromCode(vShaderName, vShaderType, code);
     }
 
-    bool initFromCode(const std::string& vShaderName, const GLenum& vShaderType, const std::string& vCode) {
+    bool initFromCode(const std::string& vShaderName, const GLenum vShaderType, const std::string& vCode) {
         bool res = false;
         assert(!vShaderName.empty());
         assert(!vCode.empty());

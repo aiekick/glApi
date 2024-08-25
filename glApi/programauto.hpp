@@ -25,6 +25,11 @@ SOFTWARE.
 #pragma once
 
 #include "glApi.hpp"
+
+#ifdef IMGUI_INCLUDE
+#include IMGUI_INCLUDE
+#endif
+
 #include <vector>
 #include <memory>
 #include <string>
@@ -133,8 +138,8 @@ public:
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) {
         m_UniformPreUploadFunctor = vUniformPreUploadFunctor;
     }
-    void addUniformFloat(const GLenum& vShaderType, const std::string& vUniformName, float* vUniformPtr, const GLuint& vCountChannels,
-                         const bool& vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
+    void addUniformFloat(const GLenum vShaderType, const std::string& vUniformName, float* vUniformPtr, const GLuint vCountChannels,
+                         const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
         assert(vUniformPtr != nullptr);
@@ -147,8 +152,8 @@ public:
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
-    void addUniformInt(const GLenum& vShaderType, const std::string& vUniformName, int32_t* vUniformPtr, const GLuint& vCountChannels,
-                       const bool& vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
+    void addUniformInt(const GLenum vShaderType, const std::string& vUniformName, int32_t* vUniformPtr, const GLuint vCountChannels,
+                       const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
         assert(vUniformPtr != nullptr);
@@ -161,7 +166,7 @@ public:
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
-    void addUniformSampler2D(const GLenum& vShaderType, const std::string& vUniformName, int32_t vSampler2D) {
+    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
         // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
@@ -172,7 +177,9 @@ public:
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
+#ifdef PROFILER_SCOPED
         PROFILER_SCOPED(m_ProgramAutoName, "uploadUniforms");
+#endif
         int32_t textureSlotId = 0;
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {
@@ -209,6 +216,7 @@ public:
             }
         }
     }
+#ifdef IMGUI_INCLUDE
     void drawUniformWidgets() {
         ImGui::PushID(m_ProgramAutoName.c_str());
         if (ImGui::CollapsingHeader(m_ProgramAutoName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -250,6 +258,7 @@ public:
         }
         ImGui::PopID();
     }
+#endif
     void locateUniforms() {
         assert(m_ProgramAutoId > 0U);
         const char* stage_name = nullptr;
