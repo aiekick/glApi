@@ -80,7 +80,6 @@ public:
         unit();
     }
     bool init(const std::string& vProgramAutoName) {
-        bool res = false;
         assert(!vProgramAutoName.empty());
         m_ProgramAutoName = vProgramAutoName;
         m_ProgramAutoId = glCreateProgram();
@@ -173,7 +172,7 @@ public:
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
-        IAGPScoped(m_ProgramAutoName, "uploadUniforms");
+        PROFILER_SCOPED(m_ProgramAutoName, "uploadUniforms");
         int32_t textureSlotId = 0;
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {

@@ -45,9 +45,11 @@ public:
     typedef std::function<void(Uniform&)> UniformWidgetFunctor;
     struct Uniform {
         std::string name;
-        float* datas_f = nullptr;    // float
-        int32_t* datas_i = nullptr;  // int
-        int32_t data_s2d = -1;       // sampler2D
+        float* datas_f = nullptr;     // float
+        int32_t* datas_i = nullptr;   // int
+        uint32_t* datas_u = nullptr;  // uint
+        bool* datas_b = nullptr;      // bool
+        int32_t data_s2d = -1;        // sampler2D
         GLint loc = -1;
         GLuint channels = 1U;
         bool used = false;
@@ -79,7 +81,6 @@ public:
         unit();
     }
     bool init(const std::string& vProgramName) {
-        bool res = false;
         assert(!vProgramName.empty());
         m_ProgramName = vProgramName;
         m_ProgramId = glCreateProgram();
@@ -130,6 +131,9 @@ public:
         }
         return res;
     }
+    const char* getLabelName() {
+        return m_ProgramName.c_str();
+    }
     void setUniformPreUploadFunctor(UniformPreUploadFunctor vUniformPreUploadFunctor) {
         m_UniformPreUploadFunctor = vUniformPreUploadFunctor;
     }
@@ -147,6 +151,13 @@ public:
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
+    void setUniformFloatDatas(const GLenum& vShaderType, const std::string& vUniformName, float* vUniformPtr) {
+        auto itShaderType = m_Uniforms.find(vShaderType);
+        assert(itShaderType != m_Uniforms.end());
+        auto itUniformName = itShaderType->second.find(vUniformName);
+        assert(itUniformName != itShaderType->second.end());
+        itUniformName->second.datas_f = vUniformPtr;
+    }
     void addUniformInt(const GLenum& vShaderType, const std::string& vUniformName, int32_t* vUniformPtr, const GLuint& vCountChannels,
                        const bool& vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
         assert(vShaderType > 0);
@@ -161,6 +172,63 @@ public:
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
+    void setUniformIntDatas(const GLenum& vShaderType, const std::string& vUniformName, int32_t* vUniformPtr) {
+        auto itShaderType = m_Uniforms.find(vShaderType);
+        assert(itShaderType != m_Uniforms.end());
+        auto itUniformName = itShaderType->second.find(vUniformName);
+        assert(itUniformName != itShaderType->second.end());
+        itUniformName->second.datas_i = vUniformPtr;
+    }
+    void addUniformUInt(const GLenum& vShaderType,
+                        const std::string& vUniformName,
+                        uint32_t* vUniformPtr,
+                        const GLuint& vCountChannels,
+                        const bool& vShowWidget,
+                        const UniformWidgetFunctor& vWidgetFunctor) {
+        assert(vShaderType > 0);
+        assert(!vUniformName.empty());
+        assert(vUniformPtr != nullptr);
+        assert(vCountChannels > 0U);
+        Uniform uni;
+        uni.name = vUniformName;
+        uni.datas_u = vUniformPtr;
+        uni.showed = vShowWidget;
+        uni.channels = vCountChannels;
+        uni.widgetFunctor = vWidgetFunctor;
+        m_Uniforms[vShaderType][vUniformName] = uni;
+    }
+    void setUniformUIntDatas(const GLenum& vShaderType, const std::string& vUniformName, uint32_t* vUniformPtr) {
+        auto itShaderType = m_Uniforms.find(vShaderType);
+        assert(itShaderType != m_Uniforms.end());
+        auto itUniformName = itShaderType->second.find(vUniformName);
+        assert(itUniformName != itShaderType->second.end());
+        itUniformName->second.datas_u = vUniformPtr;
+    }
+    void addUniformBool(const GLenum& vShaderType,
+                        const std::string& vUniformName,
+                        bool* vUniformPtr,
+                        const GLuint& vCountChannels,
+                        const bool& vShowWidget,
+                        const UniformWidgetFunctor& vWidgetFunctor) {
+        assert(vShaderType > 0);
+        assert(!vUniformName.empty());
+        assert(vUniformPtr != nullptr);
+        assert(vCountChannels > 0U);
+        Uniform uni;
+        uni.name = vUniformName;
+        uni.datas_b = vUniformPtr;
+        uni.showed = vShowWidget;
+        uni.channels = vCountChannels;
+        uni.widgetFunctor = vWidgetFunctor;
+        m_Uniforms[vShaderType][vUniformName] = uni;
+    }
+    void setUniformBoolDatas(const GLenum& vShaderType, const std::string& vUniformName, bool* vUniformPtr) {
+        auto itShaderType = m_Uniforms.find(vShaderType);
+        assert(itShaderType != m_Uniforms.end());
+        auto itUniformName = itShaderType->second.find(vUniformName);
+        assert(itUniformName != itShaderType->second.end());
+        itUniformName->second.datas_b = vUniformPtr;
+    }
     void addUniformSampler2D(const GLenum& vShaderType, const std::string& vUniformName, int32_t vSampler2D, const bool& vShowWidget) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
@@ -173,7 +241,7 @@ public:
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
-        IAGPScoped(m_ProgramName, "uploadUniforms");
+        PROFILER_SCOPED(m_ProgramName, "uploadUniforms");
         int32_t textureSlotId = 0;
         for (auto& shader_type : m_Uniforms) {
             for (auto& uni : shader_type.second) {
@@ -184,19 +252,19 @@ public:
                     if (uni.second.datas_f != nullptr) {
                         switch (uni.second.channels) {
                             case 1U: {
-                                IAGPScopedPtr(&uni, "upload float", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload float", "%s", uni.second.name.c_str());
                                 glUniform1fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                             case 2U: {
-                                IAGPScopedPtr(&uni, "upload vec2", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload vec2", "%s", uni.second.name.c_str());
                                 glUniform2fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                             case 3U: {
-                                IAGPScopedPtr(&uni, "upload vec3", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload vec3", "%s", uni.second.name.c_str());
                                 glUniform3fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                             case 4U: {
-                                IAGPScopedPtr(&uni, "upload vec4", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload vec4", "%s", uni.second.name.c_str());
                                 glUniform4fv(uni.second.loc, 1, uni.second.datas_f);
                             } break;
                         }
@@ -204,25 +272,33 @@ public:
                     } else if (uni.second.datas_i != nullptr) {
                         switch (uni.second.channels) {
                             case 1U: {
-                                IAGPScopedPtr(&uni, "upload int", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload int", "%s", uni.second.name.c_str());
                                 glUniform1iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                             case 2U: {
-                                IAGPScopedPtr(&uni, "upload iec2", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload iec2", "%s", uni.second.name.c_str());
                                 glUniform2iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                             case 3U: {
-                                IAGPScopedPtr(&uni, "upload ivec3", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload ivec3", "%s", uni.second.name.c_str());
                                 glUniform3iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                             case 4U: {
-                                IAGPScopedPtr(&uni, "upload ivec4", "%s", uni.second.name.c_str());
+                                PROFILER_SCOPED_PTR(&uni, "upload ivec4", "%s", uni.second.name.c_str());
                                 glUniform4iv(uni.second.loc, 1, uni.second.datas_i);
                             } break;
                         }
                         CheckGLErrors;
+                    } else if (uni.second.datas_u != nullptr) {
+                        switch (uni.second.channels) {
+                            case 1U: glUniform1uiv(uni.second.loc, 1, uni.second.datas_u); break;
+                            case 2U: glUniform2uiv(uni.second.loc, 1, uni.second.datas_u); break;
+                            case 3U: glUniform3uiv(uni.second.loc, 1, uni.second.datas_u); break;
+                            case 4U: glUniform4uiv(uni.second.loc, 1, uni.second.datas_u); break;
+                        }
+                        CheckGLErrors;
                     } else if (uni.second.data_s2d > -1) {
-                        IAGPScopedPtr(&uni, "upload sampler2D", "%s", uni.second.name.c_str());
+                        PROFILER_SCOPED_PTR(&uni, "upload sampler2D", "%s", uni.second.name.c_str());
                         glActiveTexture(GL_TEXTURE0 + textureSlotId);
                         CheckGLErrors;
                         glBindTexture(GL_TEXTURE_2D, uni.second.data_s2d);
@@ -235,6 +311,8 @@ public:
             }
         }
     }
+
+    /*
     void drawUniformWidgets() {
         ImGui::PushID(m_ProgramName.c_str());
         if (ImGui::CollapsingHeader(m_ProgramName.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -281,6 +359,15 @@ public:
         }
         ImGui::PopID();
     }
+    */
+
+    UniformPerShaderTypeContainer getUniforms() const {
+        return m_Uniforms;
+    }
+    UniformPerShaderTypeContainer& getUniformsRef() {
+        return m_Uniforms;
+    }
+
     void locateUniforms() {
         assert(m_ProgramId > 0U);
         const char* stage_name = nullptr;

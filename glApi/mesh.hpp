@@ -152,10 +152,10 @@ public:
     }
 
     void render(GLenum vRenderMode) {
-        IAGPScoped("Mesh", "render");
+        PROFILER_SCOPED("Mesh", "render");
         if (bind()) {
             {
-                IAGPScoped("Opengl", "glDrawElements");
+                PROFILER_SCOPED("Opengl", "glDrawElements");
                 glDrawElements(vRenderMode, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, nullptr);
             }
             CheckGLErrors;
