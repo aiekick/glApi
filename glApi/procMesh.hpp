@@ -27,6 +27,7 @@ SOFTWARE.
 #include "mesh.hpp"
 #include <vector>
 #include <memory>
+#include <cmath>
 
 namespace glApi {
 

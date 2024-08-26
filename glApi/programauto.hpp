@@ -146,8 +146,8 @@ public:
         assert(vCountChannels > 0U);
         Uniform uni;
         uni.name = vUniformName;
-        uni.datas_f = vUniformPtr;
         uni.showed = vShowWidget;
+        uni.datas_f = vUniformPtr;
         uni.channels = vCountChannels;
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
@@ -160,20 +160,22 @@ public:
         assert(vCountChannels > 0U);
         Uniform uni;
         uni.name = vUniformName;
-        uni.datas_i = vUniformPtr;
         uni.showed = vShowWidget;
+        uni.datas_i = vUniformPtr;
         uni.channels = vCountChannels;
         uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
-    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D) {
+    void addUniformSampler2D(const GLenum vShaderType, const std::string& vUniformName, int32_t vSampler2D,
+                             const bool vShowWidget, const UniformWidgetFunctor& vWidgetFunctor) {
         assert(vShaderType > 0);
         assert(!vUniformName.empty());
         // assert(vSampler2D != -1);, if the sampler must point on a buffer after, its normal to have it at -1
         Uniform uni;
         uni.name = vUniformName;
+        uni.showed = vShowWidget;
         uni.data_s2d = vSampler2D;
-        uni.channels = 0;
+        uni.widgetFunctor = vWidgetFunctor;
         m_Uniforms[vShaderType][vUniformName] = uni;
     }
     void uploadUniforms(FBOPipeLinePtr vFBOPipeLinePtr) {
