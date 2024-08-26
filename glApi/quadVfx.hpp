@@ -117,8 +117,8 @@ public:
         assert(!vVertShader.expired());
         assert(!vQuadMesh.expired());
         assert(!vFragFile.empty());
-        assert(vSx > 0U);
-        assert(vSy > 0U);
+        assert(vSx > 0);
+        assert(vSy > 0);
         assert(vCountBuffers > 0U);
         m_Name = vName;
         m_VertShader = vVertShader;
@@ -156,8 +156,8 @@ public:
         assert(!vVertShader.expired());
         assert(!vQuadMesh.expired());
         assert(!vFragCode.empty());
-        assert(vSx > 0U);
-        assert(vSy > 0U);
+        assert(vSx > 0);
+        assert(vSy > 0);
         assert(vCountBuffers > 0U);
         m_Name = vName;
         m_VertShader = vVertShader;

@@ -69,13 +69,12 @@ public:
                                        const GLenum vInternalFormat,
                                        const GLenum vFormat,
                                        const GLenum vPixelFormat,
-                                       const bool vInvertY,
                                        const std::string vWrap,
                                        const std::string vFilter,
                                        const bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vInvertY, vWrap, vFilter, vEnableMipMap)) {
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vInternalFormat, vFormat, vPixelFormat, vWrap, vFilter, vEnableMipMap)) {
             res.reset();
         }
         return res;
@@ -86,13 +85,12 @@ public:
                                        const GLsizei vSy,
                                        const GLint vChannelsCount,
                                        const GLenum vPixelFormat,
-                                       const bool vInvertY,
                                        const std::string vWrap,
                                        const std::string vFilter, 
                                        const bool vEnableMipMap) {
         auto res = std::make_shared<Texture>();
         res->m_This = res;
-        if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vInvertY, vWrap, vFilter, vEnableMipMap)) {
+        if (!res->initFromBuffer(vBuffer, vSx, vSy, vChannelsCount, vPixelFormat, vWrap, vFilter, vEnableMipMap)) {
             res.reset();
         }
         return res;
@@ -119,7 +117,7 @@ public:
         CheckGLErrors;
         glFinish();
         CheckGLErrors;
-        m_setParameters("mirror", "linear", vEnableMipMap);
+        m_setParameters(vWrap, vFilter, vEnableMipMap);
         glFinish();
         CheckGLErrors;        
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -134,7 +132,6 @@ public:
                         const GLenum vInternalFormat,
                         const GLenum vFormat,
                         const GLenum vPixelFormat,
-                        const bool vInvertY,
                         const std::string vWrap,
                         const std::string vFilter,
                         const bool vEnableMipMap) {
@@ -168,7 +165,6 @@ public:
                         const GLsizei vSy,
                         const GLint vChannelsCount,
                         const GLenum vPixelFormat,
-                        const bool vInvertY,
                         const std::string vWrap,
                         const std::string vFilter, 
                         const bool vEnableMipMap) {

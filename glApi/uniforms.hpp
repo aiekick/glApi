@@ -64,7 +64,7 @@ public:
             return "uniform " + uniform_type + " " + uniform_name + "; // " + uniform_comment_original;
         }
     }
-    const bool isValid() {
+    bool isValid() const {
         return valid;
     }
 
@@ -376,7 +376,7 @@ protected:
 
 class IUniform {
 public:
-    typedef std::function<void(IUniform*)> IUniformDrawWidgetFunctor;
+    typedef std::function<bool(IUniform*)> IUniformDrawWidgetFunctor;
 
 protected:
     std::string m_name;
@@ -398,8 +398,9 @@ public:
     }
     virtual bool draw_widget() {
         if (m_draw_widget_functor != nullptr) {
-            m_draw_widget_functor(this);
+            return m_draw_widget_functor(this);
         }
+        return true;
     };
     const char* get_general_help() {
         return u8R"(
@@ -407,9 +408,9 @@ general syntax is :
 - uniform type(widget:params) name; // simple or multiline comment
 )";
     }
-    virtual const char* get_help(){};
-    virtual bool upload_sampler(int32_t& texture_slot_id){};
-    virtual bool upload_scalar(){};
+    virtual const char* get_help(){return "";};
+    virtual bool upload_sampler(int32_t& /*texture_slot_id*/){return false;};
+    virtual bool upload_scalar(){return false;};
 };
 
 class UniformTime : public IUniform {
